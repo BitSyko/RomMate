@@ -187,22 +187,20 @@ public class Screen1Fonts extends AppCompatActivity {
 
                 try {
 
-                    // change perms of fonts folder and files 644
-                    CommandCapture command9 = new CommandCapture(0, "chmod -R 644 /system/fonts");
+                    // change perms of fonts folder to 755 and files 644
+                    CommandCapture command9 = new CommandCapture(0, "chmod -R 644 /system/fonts", "chmod 755 /system/fonts");
                     RootTools.getShell(true).add(command9);
                     while (!command9.isFinished()) {
                         Thread.sleep(1);
                     }
 
-                    // change perms of fonts folder 755
-                    CommandCapture command10 = new CommandCapture(0, "chmod 755 /system/fonts");
-                    RootTools.getShell(true).add(command10);
-                    while (!command10.isFinished()) {
-                        Thread.sleep(1);
-
+                    // reboot
+                    try {
+                        Process proc = Runtime.getRuntime()
+                                .exec(new String[]{"su", "-c", "busybox killall system_server"});
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-
-                    //  RootCommands.DeleteFileRoot(Environment.getExternalStorageDirectory() + "/rommate/temp");
 
                     RootTools.remount("/system/media", "RO");
                     // CLOSE ALL SHELLS

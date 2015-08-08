@@ -17,6 +17,7 @@ import com.stericson.RootTools.execution.CommandCapture;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -107,31 +108,30 @@ public class InstallFonts extends AppCompatActivity {
 
             RootTools.remount("/system", "RW");
 
+
+
             try {
 
                 // change perms of fonts folder and files 644
-                CommandCapture command9 = new CommandCapture(0, "chmod -R 644 /system/fonts");
+                CommandCapture command9 = new CommandCapture(0, "chmod -R 644 /system/fonts", "chmod 755 /system/fonts");
                 RootTools.getShell(true).add(command9);
                 while (!command9.isFinished()) {
                     Thread.sleep(1);
                 }
 
-                // change perms of fonts folder 755
-                CommandCapture command10 = new CommandCapture(0, "chmod 755 /system/fonts");
-                RootTools.getShell(true).add(command10);
-                while (!command10.isFinished()) {
-                    Thread.sleep(1);
-
+                // reboot
+                try {
+                    Process proc = Runtime.getRuntime()
+                            .exec(new String[]{"su", "-c", "busybox killall system_server"});
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-
-              //  RootCommands.DeleteFileRoot(Environment.getExternalStorageDirectory() + "/rommate/temp");
 
                 RootTools.remount("/system/media", "RO");
                 // CLOSE ALL SHELLS
                 RootTools.closeAllShells();
             } catch (IOException e) {
                 e.printStackTrace();
-
 
             } catch (RootDeniedException e) {
                 e.printStackTrace();
