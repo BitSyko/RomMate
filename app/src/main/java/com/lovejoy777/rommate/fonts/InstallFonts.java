@@ -2,15 +2,11 @@ package com.lovejoy777.rommate.fonts;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.lovejoy777.rommate.MainActivity;
 import com.lovejoy777.rommate.R;
@@ -40,98 +36,17 @@ public class InstallFonts extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!RootTools.isAccessGiven()) {
-
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=eu.chainfire.supersu")));
-
-        }
-
-        // mk dir rommate
-        File dir = new File(Environment.getExternalStorageDirectory() + "/rommate");
-        if (!dir.exists()) {
-            try {
-                CommandCapture command = new CommandCapture(0, "mkdir " + Environment.getExternalStorageDirectory() + "/rommate");
-
-                RootTools.getShell(true).add(command);
-                while (!command.isFinished()) {
-                    Thread.sleep(1);
-                }
-
-            } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // mk dir rommate/backups
-        File dir1 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups");
-        if (!dir1.exists()) {
-            try {
-                CommandCapture command1 = new CommandCapture(0, "mkdir " + Environment.getExternalStorageDirectory() + "/rommate/backups");
-
-                RootTools.getShell(true).add(command1);
-                while (!command1.isFinished()) {
-                    Thread.sleep(1);
-                }
-
-            } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // mk dir rommate/backups/fonts
-        File dir2 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/fonts");
-        if (!dir2.exists()) {
-            try {
-                CommandCapture command2 = new CommandCapture(0,  "mkdir " + Environment.getExternalStorageDirectory() + "/rommate/backups/fonts");
-
-                RootTools.getShell(true).add(command2);
-                while (!command2.isFinished()) {
-                    Thread.sleep(1);
-                }
-
-            } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                e.printStackTrace();
-            }
-        }
-
-            // backup fonts
-            File dir3 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/fonts/fonts");
-            if (!dir3.exists()) {
-            RootTools.remount("/system", "RW");
-
-                Toast.makeText(InstallFonts.this, "copying fonts", Toast.LENGTH_LONG).show();
-
-                CommandCapture command3 = new CommandCapture(0, "chmod 777 /system/fonts");
-                try {
-                    RootTools.getShell(true).add(command3);
-                    while (!command3.isFinished()) {
-                        Thread.sleep(1);
-                    }
-
-                } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                    e.printStackTrace();
-                }
-
-            RootTools.copyFile("/system/fonts", Environment.getExternalStorageDirectory() + "/rommate/backups/fonts/", true, true);
-
-
-        }
-
-       // new InstallFont().execute();
+        new InstallFont().execute();
 
     } // ends onCreate
 
-
-
     private class InstallFont extends AsyncTask<Void, Void, Void> {
 
-
-        ProgressDialog progressInstallfonts;
-
+        ProgressDialog progressInstallfont;
 
         protected void onPreExecute() {
 
-            progressInstallfonts = ProgressDialog.show(InstallFonts.this, "Install Fonts",
+            progressInstallfont = ProgressDialog.show(InstallFonts.this, "install Fonts",
                     "installing...", true);
 
         }
@@ -139,119 +54,108 @@ public class InstallFonts extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
 
-            String startpath = Environment.getExternalStorageDirectory() +  "/Download/fonts.zip";
-            String finishpath = Environment.getExternalStorageDirectory() +  "/test1";
-            String temp = getApplicationInfo().dataDir + "/orig/temp";
+            // mk dir rommate
+            File dir = new File(Environment.getExternalStorageDirectory() + "/rommate");
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
 
-            //IF SZP IS LESS THAN 1 CHAR DO THIS.
-            if (startpath.length() <= 1) {
+            // mk dir rommate/temp
+            File dir4 = new File(Environment.getExternalStorageDirectory() + "/rommate/temp");
+            if (!dir4.exists()) {
+                dir4.mkdir();
+            }
 
-                Toast.makeText(InstallFonts.this, "Install a compatible .zip", Toast.LENGTH_LONG).show();
+            // mk dir rommate/backups
+            File dir1 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups");
+            if (!dir1.exists()) {
+                dir1.mkdir();
+            }
 
-                finish();
-            } else {
+            // mk dir rommate/backups/fonts
+            File dir2 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/fonts");
+            if (!dir2.exists()) {
+                dir2.mkdir();
+            }
 
-                RootTools.remount("/system", "RW");
-                // CREATES bootanim dir
-                File dir3 = new File(temp);
-                if (!dir3.exists() && !dir3.isDirectory()) {
+            // backup fonts
+            File dir3 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/fonts/fonts");
+            if (!dir3.exists()) {
+                RootTools.remount("/system/media", "RW");
 
-                    CommandCapture command3 = new CommandCapture(0, "chmod 755 " + temp);
-                    try {
-                        RootTools.getShell(true).add(command3);
-                        while (!command3.isFinished()) {
-                            Thread.sleep(1);
-                        }
+                // RootTools.copyFile("/system/media/bootanimation.zip", Environment.getExternalStorageDirectory() + "/rommate/backups/boots/", true, true);
 
-                    } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                        e.printStackTrace();
-                    }
-                }
+                RootCommands.moveCopyRoot("/system/fonts", Environment.getExternalStorageDirectory() + "/rommate/backups/fonts/");
+            }
 
-                CommandCapture command4 = new CommandCapture(0, "mkdir " + finishpath, "chmod 666 -R " + temp, "chmod 666 -R " + getApplicationInfo().dataDir + "/orig/bootanim");
+            // GET STRING SZP
+            final Intent extras = getIntent();
+            String SZP = null;
+            if (extras != null) {
+                SZP = extras.getStringExtra("key1");
+
+                // unzip source zip to rommate/temp
                 try {
-                    RootTools.getShell(true).add(command4);
-                    while (!command4.isFinished()) {
-                        Thread.sleep(2);
-                    }
-
-                } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    unzip(startpath, finishpath + "/fonts/");
+                    unzip (SZP, Environment.getExternalStorageDirectory() + "/rommate/temp");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-               // RootTools.copyFile(finishpath + "/fonts/", temp + "/", true, true);
-                RootCommands.moveCopyRoot(finishpath + "/fonts/", temp + "/");
 
-                CommandCapture command5 = new CommandCapture(0, "chmod -R 644 " + temp);
-                try {
-                    RootTools.getShell(true).add(command5);
-                    while (!command5.isFinished()) {
-                        Thread.sleep(1);
-                    }
+                // copy bootanimation.zip from rommate/temp to system
+                RootCommands.moveCopyRoot(Environment.getExternalStorageDirectory() + "/rommate/temp/fonts", "/system");
+            }
 
-                RootTools.remount("/system", "RW");
+            RootTools.remount("/system", "RW");
 
-// CHANGE PERMISSIONS TO COPY FINAL /VENDOR/OVERLAY FOLDER & FILES TO 777
-                CommandCapture command8 = new CommandCapture(0, "chmod -R 777 /system/fonts");
-                RootTools.getShell(true).add(command8);
-                while (!command8.isFinished()) {
-                    Thread.sleep(1);
-                }
+            try {
 
-                // COPY NEW FILES TO /VENDOR/OVERLAY FOLDER
-                RootCommands.moveCopyRoot(temp + "/fonts/", "/system");
-
-                // CHANGE PERMISSIONS OF FINAL /VENDOR/OVERLAY FOLDER & FILES TO 666 RECURING
+                // change perms of fonts folder and files 644
                 CommandCapture command9 = new CommandCapture(0, "chmod -R 644 /system/fonts");
                 RootTools.getShell(true).add(command9);
                 while (!command9.isFinished()) {
                     Thread.sleep(1);
                 }
 
-                // CHANGE PERMISSIONS OF FINAL /VENDOR/OVERLAY FOLDER BACK TO 777
+                // change perms of fonts folder 755
                 CommandCapture command10 = new CommandCapture(0, "chmod 755 /system/fonts");
                 RootTools.getShell(true).add(command10);
                 while (!command10.isFinished()) {
                     Thread.sleep(1);
-                    RootTools.remount("/system", "RO");
+
                 }
 
-                RootCommands.DeleteFileRoot(finishpath);
+              //  RootCommands.DeleteFileRoot(Environment.getExternalStorageDirectory() + "/rommate/temp");
 
+                RootTools.remount("/system/media", "RO");
                 // CLOSE ALL SHELLS
                 RootTools.closeAllShells();
+            } catch (IOException e) {
+                e.printStackTrace();
 
-                } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                    e.printStackTrace();
-                }
 
+            } catch (RootDeniedException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
-            finish();
             return null;
         }
 
         protected void onPostExecute(Void result) {
 
-            progressInstallfonts.dismiss();
+            progressInstallfont.dismiss();
 
-            finish();
-
-            // LAUNCH LAYERS.CLASS
+            // LAUNCH MainActivity
             overridePendingTransition(R.anim.back2, R.anim.back1);
             Intent iIntent = new Intent(InstallFonts.this, MainActivity.class);
             iIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             iIntent.putExtra("ShowSnackbar", true);
-            iIntent.putExtra("SnackbarText", "Installed selected BootAnimation");
+            iIntent.putExtra("SnackbarText", "Installed selected Fonts");
             startActivity(iIntent);
         }
-
-
     }
 
     /**
@@ -326,6 +230,4 @@ public class InstallFonts extends AppCompatActivity {
         super.onBackPressed();
         overridePendingTransition(R.anim.back2, R.anim.back1);
     }
-
-
 }

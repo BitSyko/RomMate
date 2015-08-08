@@ -9,6 +9,8 @@
     <string name="card2">Click to list all fonts</string>
     <string name="card3header">Layers Manager</string>
     <string name="card3">Click to launch Layers Manager</string>
+    <string name="reboot">Reboot</string>
+    <string name="PreformReboot">Perform a soft reboot?</string>
 
 
     <!-- BOOTANIM MAIN SCREEN CARD TEXT -->

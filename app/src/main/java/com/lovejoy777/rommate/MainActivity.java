@@ -1,21 +1,27 @@
 package com.lovejoy777.rommate;
 
 import android.app.ActivityOptions;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.lovejoy777.rommate.bootanimation.Screen1BootAnim;
+import com.lovejoy777.rommate.commands.Commands;
 import com.lovejoy777.rommate.commands.RootCommands;
 import com.lovejoy777.rommate.fonts.Screen1Fonts;
 import com.stericson.RootTools.RootTools;
@@ -121,109 +127,6 @@ public class MainActivity extends AppCompatActivity {
         return app_installed;
     }
 
-
-
-    private class Restore extends AsyncTask<Void,Void,Void> {
-
-        ProgressDialog progressRestore;
-
-        protected void onPreExecute() {
-
-            progressRestore = ProgressDialog.show(MainActivity.this, "Restoring Originals",
-                    "restoring...", true);
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            //ProgressDialog progressRestore;
-            String startpath = getApplicationInfo().dataDir + "/orig/bootanim/bootanimation.zip";
-            String checkpath = getApplicationInfo().dataDir + "/orig/bootanim";
-            String startpathfonts = getApplicationInfo().dataDir + "/orig/fonts/fonts";
-            String checkpathfonts = getApplicationInfo().dataDir + "/orig/fonts";
-            String media = "/system/media";
-            String fonts = "/system/fonts";
-
-
-
-            File dir1 = new File(checkpath);
-            if (!dir1.exists()) {
-
-                Toast.makeText(MainActivity.this, "no original boot animation found", Toast.LENGTH_LONG).show();
-
-            } else {
-
-                try {
-                    RootTools.remount("/system", "RW");
-
-                    // CHANGE PERMISSIONS TO COPY FINAL /VENDOR/OVERLAY FOLDER & FILES TO 777
-                    CommandCapture command8 = new CommandCapture(0, "chmod -R 777 /system/fonts");
-                    RootTools.getShell(true).add(command8);
-                    while (!command8.isFinished()) {
-                        Thread.sleep(1);
-                    }
-
-
-                    RootTools.copyFile(startpath, media + "/", true, true);
-                    //  RootTools.copyFile(startpathfonts, fonts + "/", true, true);
-                    //  RootCommands.moveCopyRoot(startpath, media + "/");
-
-                    RootCommands.moveCopyRoot(startpathfonts, "/system");
-
-                    // CHANGE PERMISSIONS OF FINAL /VENDOR/OVERLAY FOLDER & FILES TO 666 RECURING
-                    CommandCapture command9 = new CommandCapture(0, "chmod -R 644 /system/fonts");
-                    RootTools.getShell(true).add(command9);
-                    while (!command9.isFinished()) {
-                        Thread.sleep(1);
-                    }
-
-                    // CHANGE PERMISSIONS OF FINAL /VENDOR/OVERLAY FOLDER BACK TO 777
-                    CommandCapture command10 = new CommandCapture(0, "chmod 755 /system/fonts");
-                    RootTools.getShell(true).add(command10);
-                    while (!command10.isFinished()) {
-                        Thread.sleep(1);
-                        RootTools.remount("/system", "RO");
-                    }
-
-
-                    RootTools.remount("/system", "RO");
-                    // CLOSE ALL SHELLS
-                    RootTools.closeAllShells();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (RootDeniedException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            //  finish();
-            return null;
-        }
-
-
-        protected void onPostExecute(Void result) {
-
-            progressRestore.dismiss();
-
-            //finish();
-
-            // LAUNCH LAYERS.CLASS
-            overridePendingTransition(R.anim.back2, R.anim.back1);
-            Intent iIntent = new Intent(MainActivity.this, MainActivity.class);
-            iIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            iIntent.putExtra("ShowSnackbar", true);
-            iIntent.putExtra("SnackbarText","Installed selected Overlays");
-            startActivity(iIntent);
-
-        }
-    }
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -231,13 +134,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            overridePendingTransition(R.anim.back2, R.anim.back1);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if  (id == R.id.action_reboot) {
+            reboot();
             return true;
         }
-        return false;
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void reboot () {
+        new AlertDialog.Builder(this)
+                .setTitle("Soft Reboot")
+                .setMessage("Are you sure you want to reboot?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            Process proc = Runtime.getRuntime()
+                                    .exec(new String[]{"su", "-c", "busybox killall system_server"});
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
     }
 }

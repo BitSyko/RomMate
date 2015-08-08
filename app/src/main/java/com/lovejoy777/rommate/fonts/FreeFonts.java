@@ -59,7 +59,7 @@ public class FreeFonts extends AppCompatActivity {
         mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
 
         themesList = new ArrayList<Themes>();
-        new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/bootani/fonts.json");
+        new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/rommate/fonts.json");
 
         mRecyclerView = (RecyclerView)findViewById(R.id.cardList);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -76,7 +76,6 @@ public class FreeFonts extends AppCompatActivity {
 
                         String title = themesList.get(position).gettitle();
                         String link = themesList.get(position).getlink();
-                        String googleplus = themesList.get(position).getgoogleplus();
                         String promo = themesList.get(position).getpromo();
                         String developer = themesList.get(position).getauthor();
                         String description = themesList.get(position).getdescription();
@@ -86,7 +85,6 @@ public class FreeFonts extends AppCompatActivity {
 
                         Infoactivity.putExtra("keytitle", title);
                         Infoactivity.putExtra("keylink", link);
-                        Infoactivity.putExtra("keygoogleplus", googleplus);
                         Infoactivity.putExtra("keypromo", promo);
                         Infoactivity.putExtra("keydescription", description);
                         Infoactivity.putExtra("keydeveloper", developer);
@@ -104,7 +102,7 @@ public class FreeFonts extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 themesList.clear();
-                new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/bootani/fonts.json");
+                new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/rommate/fonts.json");
                 onItemsLoadComplete();
             }
 
@@ -148,7 +146,7 @@ public class FreeFonts extends AppCompatActivity {
 
 
                     JSONObject jsono = new JSONObject(data);
-                    JSONArray jarray = jsono.getJSONArray("FreeFonts");
+                    JSONArray jarray = jsono.getJSONArray("Fonts");
 
                     Random rnd = new Random();
                     for (int i = jarray.length() - 1; i >= 0; i--)
@@ -164,9 +162,7 @@ public class FreeFonts extends AppCompatActivity {
 
                         theme.settitle(object.getString("title"));
                         theme.setauthor(object.getString("author"));
-                        theme.setversion(object.getString("version"));
                         theme.setlink(object.getString("link"));
-                        theme.setgoogleplus(object.getString("googleplus"));
                         theme.seticon(object.getString("icon"));
                         theme.setpromo(object.getString("promo"));
                         theme.setdescription(object.getString("description"));
@@ -203,25 +199,8 @@ public class FreeFonts extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if  (id == R.id.action_search) {
-            Toast.makeText(getApplicationContext(), "Search Clicked",
-                    Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+
+
 
 }
