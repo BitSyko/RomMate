@@ -2,7 +2,6 @@ package com.lovejoy777.rommate.bootanimation;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -37,70 +36,6 @@ public class InstallBootAnim extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!RootTools.isAccessGiven()) {
-
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=eu.chainfire.supersu")));
-
-        }
-
-        // mk dir rommate
-        File dir = new File(Environment.getExternalStorageDirectory() + "/rommate");
-        if (!dir.exists()) {
-            try {
-                CommandCapture command = new CommandCapture(0, "mkdir " + Environment.getExternalStorageDirectory() + "/rommate");
-
-                RootTools.getShell(true).add(command);
-                while (!command.isFinished()) {
-                    Thread.sleep(1);
-                }
-
-            } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // mk dir rommate/backups
-        File dir1 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups");
-        if (!dir1.exists()) {
-            try {
-                CommandCapture command1 = new CommandCapture(0, "mkdir " + Environment.getExternalStorageDirectory() + "/rommate/backups");
-
-                RootTools.getShell(true).add(command1);
-                while (!command1.isFinished()) {
-                    Thread.sleep(1);
-                }
-
-            } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // mk dir rommate/backups/boots
-        File dir2 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots");
-        if (!dir2.exists()) {
-            try {
-                CommandCapture command2 = new CommandCapture(0,  "mkdir " + Environment.getExternalStorageDirectory() + "/rommate/backups/boots");
-
-                RootTools.getShell(true).add(command2);
-                while (!command2.isFinished()) {
-                    Thread.sleep(1);
-                }
-
-            } catch (IOException | TimeoutException | InterruptedException | RootDeniedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // backup bootanimation
-        File dir3 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
-        if (!dir3.exists()) {
-            RootTools.remount("/system/media", "RW");
-
-            RootTools.copyFile("/system/media/bootanimation.zip", Environment.getExternalStorageDirectory() + "/rommate/backups/boots/", true, true);
-
-        }
-
-
         new InstallBootanim().execute();
 
     } // end oncreate
@@ -121,71 +56,86 @@ public class InstallBootAnim extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
 
+            // mk dir rommate
+            File dir = new File(Environment.getExternalStorageDirectory() + "/rommate");
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+
+            // mk dir rommate/temp
+            File dir4 = new File(Environment.getExternalStorageDirectory() + "/rommate/temp");
+            if (!dir4.exists()) {
+                dir4.mkdir();
+            }
+
+            // mk dir rommate/backups
+            File dir1 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups");
+            if (!dir1.exists()) {
+                dir1.mkdir();
+            }
+
+            // mk dir rommate/backups/boots
+            File dir2 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots");
+            if (!dir2.exists()) {
+                dir2.mkdir();
+            }
+
+            // backup bootanimation
+            File dir3 = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
+            if (!dir3.exists()) {
+                RootTools.remount("/system/media", "RW");
+
+               // RootTools.copyFile("/system/media/bootanimation.zip", Environment.getExternalStorageDirectory() + "/rommate/backups/boots/", true, true);
+
+                RootCommands.moveCopyRoot("/system/media/bootanimation.zip", Environment.getExternalStorageDirectory() + "/rommate/backups/boots/");
+            }
+
             // GET STRING SZP
             final Intent extras = getIntent();
             String SZP = null;
             if (extras != null) {
                 SZP = extras.getStringExtra("key1");
+
+                // unzip source zip to rommate/temp
+                try {
+                    unzip (SZP, Environment.getExternalStorageDirectory() + "/rommate/temp");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                // copy bootanimation.zip from rommate/temp to system/media
+                RootCommands.moveCopyRoot(Environment.getExternalStorageDirectory() + "/rommate/temp/bootanimation.zip", "/system/media/");
             }
 
+            RootTools.remount("/system/media", "RW");
 
             try {
-            CommandCapture command7 = new CommandCapture(0, "mkdir " + Environment.getExternalStorageDirectory() + "/temp");
+                CommandCapture command5 = new CommandCapture(0, "chmod 644 /system/media/bootanimation.zip");
 
-                RootTools.getShell(true).add(command7);
-                while (!command7.isFinished())
+                RootTools.getShell(true).add(command5);
+                while (!command5.isFinished()) {
                     Thread.sleep(1);
+                }
+
+                RootCommands.DeleteFileRoot(Environment.getExternalStorageDirectory() + "/rommate/temp");
+
+                RootTools.remount("/system/media", "RO");
+                // CLOSE ALL SHELLS
+                RootTools.closeAllShells();
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (TimeoutException e) {
-                e.printStackTrace();
+
+
             } catch (RootDeniedException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            RootTools.remount("/system", "RW");
-            try {
-                unzip (SZP, Environment.getExternalStorageDirectory() + "/temp");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-
-            RootTools.copyFile(Environment.getExternalStorageDirectory() + "/temp/bootanimation.zip", "/system/media/", true, true);
-
-            RootTools.remount("/system/media", "RW");
-
-            try {
-            CommandCapture command5 = new CommandCapture(0, "chmod 644 /system/media/bootanimation.zip");
-
-                   RootTools.getShell(true).add(command5);
-                   while (!command5.isFinished()) {
-                       Thread.sleep(1);
-                   }
-
-                RootCommands.DeleteFileRoot(Environment.getExternalStorageDirectory() + "/temp");
-
-                        // CLOSE ALL SHELLS
-                        RootTools.closeAllShells();
-            } catch (IOException e) {
-                e.printStackTrace();
-
-
-              } catch (RootDeniedException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
             return null;
         }
-
-
 
         protected void onPostExecute(Void result) {
 

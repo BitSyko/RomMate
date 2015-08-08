@@ -112,11 +112,7 @@ public class DonateBootAnim extends AppCompatActivity {
         });
     }
 
-
-
     class JSONAsyncTask extends AsyncTask<String, Void, Boolean> {
-
-
 
         @Override
         protected void onPreExecute() {

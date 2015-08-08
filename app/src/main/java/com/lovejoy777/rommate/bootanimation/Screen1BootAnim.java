@@ -2,7 +2,9 @@ package com.lovejoy777.rommate.bootanimation;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.lovejoy777.rommate.MainActivity;
 import com.lovejoy777.rommate.R;
 import com.lovejoy777.rommate.commands.RootCommands;
 import com.lovejoy777.rommate.filepicker.FilePickerActivity;
@@ -44,11 +47,11 @@ public class Screen1BootAnim extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_action_back);
         setSupportActionBar(toolbar);
 
-
         card1 = (CardView) findViewById(R.id.CardView_bootcard1);
         card2 = (CardView) findViewById(R.id.CardView_bootcard2);
         card3 = (CardView) findViewById(R.id.CardView_bootcard3);
         card4 = (CardView) findViewById(R.id.CardView_bootcard4);
+
 
         // CARD 1
         card1.setOnClickListener(new View.OnClickListener() {
@@ -61,7 +64,7 @@ public class Screen1BootAnim extends AppCompatActivity {
                 startActivity(freeactivity, bndlanimation);
 
             }
-        }); // end card1
+        });
 
         // CARD 2
         card2.setOnClickListener(new View.OnClickListener() {
@@ -76,7 +79,7 @@ public class Screen1BootAnim extends AppCompatActivity {
 
 
             }
-        }); // end card3
+        });
 
         // CARD 3
         card3.setOnClickListener(new View.OnClickListener() {
@@ -97,63 +100,92 @@ public class Screen1BootAnim extends AppCompatActivity {
 
 
             }
-        }); // end card3
+        });
 
         // CARD 4
         card4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                restore();
+                new RestoreBootanim().execute();
 
             }
-        }); // end card4
+        });
 
     } // ends onCreate
 
-    public void restore() {
 
-        // CREATES /SDCARD/OVERLAYS
-        File dir = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
-        if (!dir.exists()) {
+    private class RestoreBootanim extends AsyncTask<Void, Void, Void> {
 
+        ProgressDialog progressRestorebootanim;
 
-            Toast.makeText(Screen1BootAnim.this, "no boot animation found", Toast.LENGTH_LONG).show();
+        protected void onPreExecute() {
 
-        } else {
+            progressRestorebootanim = ProgressDialog.show(Screen1BootAnim.this, "restore BootAnimation",
+                    "restoring...", true);
 
-            // CREATES /SDCARD/OVERLAYS
-            File dir1 = new File("/system/media/bootanimation.zip");
-            if (dir1.exists()) {
+        }
 
-                RootCommands.DeleteFileRoot("/system/media/bootanimation.zip");
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            // check if backedup boot anim exits
+            File dir = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
+            if (!dir.exists()) {
+
+                Toast.makeText(Screen1BootAnim.this, "no boot animation found", Toast.LENGTH_LONG).show();
+
+            } else {
+
+                // if /system/media/bootanimation exists delete it
+                File dir1 = new File("/system/media/bootanimation.zip");
+                if (dir1.exists()) {
+
+                    RootCommands.DeleteFileRoot("/system/media/bootanimation.zip");
+                }
+
+                try {
+
+                    RootTools.remount("/system/media", "RW");
+
+                    RootCommands.moveCopyRoot(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip", "/system/media/");
+                    //  RootTools.copyFile(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip", "/system/media/", true, true);
+
+                    // RootTools.remount("/system/media", "RW");
+                    CommandCapture command5 = new CommandCapture(0, "chmod 644 /system/media/bootanimation.zip");
+                    RootTools.getShell(true).add(command5);
+                    while (!command5.isFinished()) {
+                        Thread.sleep(1);
+                    }
+
+                    // CLOSE ALL SHELLS
+                    RootTools.closeAllShells();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (RootDeniedException e) {
+                    e.printStackTrace();
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
-               try {
+            return null;
+        }
 
-             RootTools.remount("/system/media", "RW");
+        protected void onPostExecute(Void result) {
 
-             RootTools.copyFile(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip", "/system/media/", true, true);
+            progressRestorebootanim.dismiss();
 
-                   RootTools.remount("/system/media", "RW");
-             CommandCapture command5 = new CommandCapture(0, "chmod 644 /system/media/bootanimation.zip");
-             RootTools.getShell(true).add(command5);
-             while (!command5.isFinished()) {
-             Thread.sleep(1);
-             }
-
-             // CLOSE ALL SHELLS
-             RootTools.closeAllShells();
-
-             } catch (IOException e) {
-             e.printStackTrace();
-             } catch (RootDeniedException e) {
-             e.printStackTrace();
-             } catch (TimeoutException e) {
-             e.printStackTrace();
-             } catch (InterruptedException e) {
-             e.printStackTrace();
-             }
+            // LAUNCH MainActivity
+            overridePendingTransition(R.anim.back2, R.anim.back1);
+            Intent iIntent = new Intent(Screen1BootAnim.this, MainActivity.class);
+            iIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            iIntent.putExtra("ShowSnackbar", true);
+            iIntent.putExtra("SnackbarText", "Restored BootAnimation");
+            startActivity(iIntent);
         }
     }
 
@@ -201,8 +233,6 @@ public class Screen1BootAnim extends AppCompatActivity {
             }
         }
     } // ends onActivityForResult
-
-
 
 
     @Override

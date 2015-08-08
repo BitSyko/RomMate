@@ -87,14 +87,11 @@ public class DetailBootAnim extends AppCompatActivity {
             }
         }); // end DOWNLOAD BUTTON
 
-
-
     }
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         overridePendingTransition(R.anim.back2, R.anim.back1);
     }
-
 }
 

@@ -221,5 +221,4 @@ public class FreeBootAnim extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 }
