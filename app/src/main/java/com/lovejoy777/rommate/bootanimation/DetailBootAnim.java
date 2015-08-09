@@ -44,6 +44,7 @@ public class DetailBootAnim extends AppCompatActivity {
         // GET STRINGS
         String title = extras.getStringExtra("keytitle");
         final String link = extras.getStringExtra("keylink");
+        final String md5 = extras.getStringExtra("keymd5");
         final String promo = extras.getStringExtra("keypromo");
         String description = extras.getStringExtra("keydescription");
         String developer = extras.getStringExtra("keydeveloper");

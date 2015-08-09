@@ -38,9 +38,10 @@ public class DetailFonts extends AppCompatActivity {
         // GET STRING SZP
         final Intent extras = getIntent();
 
-        // GET STRINGS
+        // GET STRINGSinter
         String title = extras.getStringExtra("keytitle");
         final String link = extras.getStringExtra("keylink");
+        final String md5 = extras.getStringExtra("keymd5");
         final String promo = extras.getStringExtra("keypromo");
         String description = extras.getStringExtra("keydescription");
         String developer = extras.getStringExtra("keydeveloper");

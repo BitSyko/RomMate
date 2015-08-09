@@ -10,6 +10,8 @@ public class Themes {
     private String packagename;
     private String video;
     private String link;
+    private String md5;
+
     private String googleplus;
     private String promo;
     private String screenshot_1;
@@ -23,7 +25,7 @@ public class Themes {
             // TODO Auto-generated constructor stub
         }
 
-        public Themes(String title, String description, String author, String packagename, String video, String link, String googleplus, String promo, String screenshot_1, String screenshot_2, String screenshot_3, String version, String icon) {
+        public Themes(String title, String description, String author, String packagename, String video, String link, String md5, String googleplus, String promo, String screenshot_1, String screenshot_2, String screenshot_3, String version, String icon) {
             super();
             this.title = title;
             this.description = description;
@@ -31,6 +33,7 @@ public class Themes {
             this.packagename = packagename;
             this.video = video;
             this.link = link;
+            this.md5 = md5;
             this.googleplus = googleplus;
             this.promo = promo;
             this.screenshot_1 = screenshot_1;
@@ -81,6 +84,14 @@ public class Themes {
     public void setlink(String link) {
             this.link = link;
         }
+
+    public String getmd5() {
+        return md5;
+    }
+
+    public void setmd5(String md5) {
+        this.md5 = md5;
+    }
 
     public String getgoogleplus() {
         return googleplus;

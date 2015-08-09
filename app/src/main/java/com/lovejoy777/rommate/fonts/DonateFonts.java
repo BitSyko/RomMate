@@ -76,6 +76,7 @@ public class DonateFonts extends AppCompatActivity {
 
                         String title = themesList.get(position).gettitle();
                         String link = themesList.get(position).getlink();
+                        String md5 = themesList.get(position).getmd5();
                         String promo = themesList.get(position).getpromo();
                         String developer = themesList.get(position).getauthor();
                         String description = themesList.get(position).getdescription();
@@ -85,6 +86,7 @@ public class DonateFonts extends AppCompatActivity {
 
                         Infoactivity.putExtra("keytitle", title);
                         Infoactivity.putExtra("keylink", link);
+                        Infoactivity.putExtra("keymd5", md5);
                         Infoactivity.putExtra("keypromo", promo);
                         Infoactivity.putExtra("keydescription", description);
                         Infoactivity.putExtra("keydeveloper", developer);
@@ -163,6 +165,7 @@ public class DonateFonts extends AppCompatActivity {
                         theme.settitle(object.getString("title"));
                         theme.setauthor(object.getString("author"));
                         theme.setlink(object.getString("link"));
+                        theme.setmd5(object.getString("md5"));
                         theme.seticon(object.getString("icon"));
                         theme.setpromo(object.getString("promo"));
                         theme.setdescription(object.getString("description"));
