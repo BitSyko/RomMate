@@ -14,7 +14,7 @@
 
 
     <!-- BOOTANIM MAIN SCREEN CARD TEXT -->
-    <string name="bootcard1header">Free Boot Animations</string>
+    <string name="bootcard1header">Boot Animations</string>
     <string name="bootcard1">Click to list all free Boot Animations</string>
     <string name="bootcard2header">Donate Boot Animations</string>
     <string name="bootcard2">Click to list all donate boot animations</string>
@@ -24,7 +24,7 @@
     <string name="bootcard4">Click to restore your saved backup</string>
 
     <!-- FONTS MAIN SCREEN CARD TEXT -->
-    <string name="fontscard1header">Free Fonts</string>
+    <string name="fontscard1header">Fonts</string>
     <string name="fontscard1">Click to list all free fonts</string>
     <string name="fontscard2header">Donate Fonts</string>
     <string name="fontscard2">Click to list all donate fonts</string>

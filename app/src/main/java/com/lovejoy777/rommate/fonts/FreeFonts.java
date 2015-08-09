@@ -59,7 +59,7 @@ public class FreeFonts extends AppCompatActivity {
         mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
 
         themesList = new ArrayList<Themes>();
-        new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/rommate/fonts.json");
+        new JSONAsyncTask().execute("https://raw.githubusercontent.com/BitSyko/rommate_fonts_json/master/fonts.json");
 
         mRecyclerView = (RecyclerView)findViewById(R.id.cardList);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -104,7 +104,7 @@ public class FreeFonts extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 themesList.clear();
-                new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/rommate/fonts.json");
+                new JSONAsyncTask().execute("https://raw.githubusercontent.com/BitSyko/rommate_fonts_json/master/fonts.json");
                 onItemsLoadComplete();
             }
 

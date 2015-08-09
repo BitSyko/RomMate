@@ -35,7 +35,7 @@ public class Screen1Fonts extends AppCompatActivity {
     final String startDirInstall = Environment.getExternalStorageDirectory() +  "/Download";
     private static final int CODE_SD = 0;
     private static final int CODE_DB = 1;
-    CardView card1, card2, card3, card4;
+    CardView card1, card3, card4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +49,6 @@ public class Screen1Fonts extends AppCompatActivity {
 
 
         card1 = (CardView) findViewById(R.id.CardView_fontscard1);
-        card2 = (CardView) findViewById(R.id.CardView_fontscard2);
         card3 = (CardView) findViewById(R.id.CardView_fontscard3);
         card4 = (CardView) findViewById(R.id.CardView_fontscard4);
 
@@ -66,20 +65,7 @@ public class Screen1Fonts extends AppCompatActivity {
             }
         });
 
-        // CARD 2
-        card2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                Intent donateactivity = new Intent(Screen1Fonts.this, DonateFonts.class);
-
-                Bundle bndlanimation =
-                        ActivityOptions.makeCustomAnimation(getApplicationContext(), R.anim.anni1, R.anim.anni2).toBundle();
-                startActivity(donateactivity, bndlanimation);
-
-
-            }
-        });
 
         // CARD 3
         card3.setOnClickListener(new View.OnClickListener() {

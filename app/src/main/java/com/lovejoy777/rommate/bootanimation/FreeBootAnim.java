@@ -58,7 +58,8 @@ public class FreeBootAnim extends AppCompatActivity {
         mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
 
         themesList = new ArrayList<Themes>();
-        new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/rommate/bootanims.json");
+
+        new JSONAsyncTask().execute("https://raw.githubusercontent.com/BitSyko/rommate_boots_json/master/bootanims.json");
 
         mRecyclerView = (RecyclerView)findViewById(R.id.cardList);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -105,7 +106,7 @@ public class FreeBootAnim extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 themesList.clear();
-                new JSONAsyncTask().execute("https://dl.dropboxusercontent.com/u/75065013/rommate/bootanims.json");
+                new JSONAsyncTask().execute("https://raw.githubusercontent.com/BitSyko/rommate_boots_json/master/bootanims.json");
                 onItemsLoadComplete();
             }
 
@@ -149,7 +150,7 @@ public class FreeBootAnim extends AppCompatActivity {
 
 
                     JSONObject jsono = new JSONObject(data);
-                    JSONArray jarray = jsono.getJSONArray("FreeBoots");
+                    JSONArray jarray = jsono.getJSONArray("Boots");
 
                     Random rnd = new Random();
                     for (int i = jarray.length() - 1; i >= 0; i--)
