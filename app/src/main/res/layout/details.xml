@@ -165,7 +165,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/videoView1"
-                android:src="@drawable/heroimage"
                 android:layout_below="@+id/CardViewDeveloper" />
 
         </RelativeLayout>

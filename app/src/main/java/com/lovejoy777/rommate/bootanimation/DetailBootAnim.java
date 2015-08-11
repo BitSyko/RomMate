@@ -20,6 +20,7 @@ import android.widget.*;
 
 import com.lovejoy777.rommate.ImageLoadTaskPromo;
 import com.lovejoy777.rommate.R;
+import com.squareup.picasso.Picasso;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -27,6 +28,9 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -75,7 +79,10 @@ public class DetailBootAnim extends AppCompatActivity {
 
         // SET TEXT/IMAGE VIEWS
         collapsingToolbar.setTitle(title);
-        new ImageLoadTaskPromo(promo, promoimg).execute();
+
+        Picasso.with(this).load(promo).into(promoimg);
+        Picasso.with(this).load(promo).into(videoView1);
+
         txt2.setText(description);
         developertv.setText(developer);
 
@@ -133,9 +140,8 @@ public class DetailBootAnim extends AppCompatActivity {
             try {
 
                 Log.d("Animation", "download started");
-                publishProgress("download started");
+                   publishProgress("download started");
 
-                // FileUtils.copyURLToFile();
 
                 File downloadLocation = new File(context.getCacheDir() + "/" + name + ".zip");
                 downloadLocation.delete();
@@ -188,45 +194,85 @@ public class DetailBootAnim extends AppCompatActivity {
                 publishProgress("unzipping finished");
 
 
-                //30 fps
-                int duration = (int) (1000.0 / 30.0);
+                File bootaniCacheFolder = new File(context.getCacheDir() + "/" + name + "_cache");
 
-                ArrayList<String> files = loadFiles(context.getCacheDir() + "/" + name + "_cache/part1");
+                List<String> confFile = FileUtils.readLines(new File(bootaniCacheFolder.getAbsoluteFile() + "/desc.txt"));
+
+                Pattern firstLineRegex = Pattern.compile("(\\d*) (\\d*) (\\d*)");
+                Pattern otherLineRegex = Pattern.compile("(\\D*) (\\d*) (\\d*) (.*)");
+
+
+                Matcher matcher = firstLineRegex.matcher(confFile.get(0));
+
+                matcher.find();
+
+                int fps = Integer.parseInt(matcher.group(3));
+
+                int duration = (int) (1000.0 / fps);
 
                 AnimationDrawable animationDrawable = new AnimationDrawable();
                 animationDrawable.setOneShot(false);
 
+                for (int i = 1; i < confFile.size(); i++) {
 
-                for (String fileName : files) {
+                    String line = confFile.get(i);
 
-                    File file = new File(context.getCacheDir() + "/" + name + "_cache/part1/" + fileName);
+                    Matcher lineMatcher = otherLineRegex.matcher(line);
 
-                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), null);
+                    if (!lineMatcher.find()) {
+                        continue;
+                    }
 
-                    Drawable d = new BitmapDrawable(getResources(), RotateBitmap(bitmap, 90));
+                    String folder = lineMatcher.group(4);
 
-                    animationDrawable.addFrame(d, duration);
 
-                    Log.d("Animation adding", file.getAbsolutePath());
+                    ArrayList<String> files = loadFiles(context.getCacheDir() + "/" + name + "_cache/" + folder);
+
+
+                    for (String fileName : files) {
+
+                        File file = new File(context.getCacheDir() + "/" + name + "_cache/" + folder + "/" + fileName);
+
+                        //   Bitmap bitmap = Picasso.with(context).load(file).get();
+
+                        BitmapFactory.Options op = new BitmapFactory.Options();
+                        op.inPreferredConfig = Bitmap.Config.RGB_565;
+                        op.outHeight = 200;
+                        op.outWidth = 200;
+
+                        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), op);
+
+
+                        //publishProgress(bitmap);
+
+                        //Thread.sleep(duration);
+
+                        Drawable d = new BitmapDrawable(getResources(), bitmap);
+
+                        // bitmap.recycle();
+
+                        animationDrawable.addFrame(d, duration);
+
+                        Log.d("Animation adding", file.getAbsolutePath());
+
+                    }
 
                 }
 
-
                 return animationDrawable;
 
-            } catch (IOException e) {
+            } catch (IOException | OutOfMemoryError e) {
                 e.printStackTrace();
             }
-
 
             return null;
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
+            //   super.onProgressUpdate(values);
+            // imageView.setImageBitmap(values[0]);
             Toast.makeText(context, values[0], Toast.LENGTH_SHORT).show();
-
         }
 
         @Override
@@ -265,8 +311,7 @@ public class DetailBootAnim extends AppCompatActivity {
             return files;
         }
 
-        private Bitmap RotateBitmap(Bitmap source, float angle)
-        {
+        private Bitmap RotateBitmap(Bitmap source, float angle) {
             Matrix matrix = new Matrix();
             matrix.postRotate(angle);
             return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
