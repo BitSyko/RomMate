@@ -329,8 +329,6 @@ public class DetailBootAnim extends AppCompatActivity {
 
                     BitmapFactory.Options op = new BitmapFactory.Options();
                     op.inPreferredConfig = Bitmap.Config.RGB_565;
-                    op.outHeight = 200;
-                    op.outWidth = 200;
 
                     Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), op);
 
