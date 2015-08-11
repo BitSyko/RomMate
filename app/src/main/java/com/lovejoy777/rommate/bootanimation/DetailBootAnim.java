@@ -140,7 +140,7 @@ public class DetailBootAnim extends AppCompatActivity {
             try {
 
                 Log.d("Animation", "download started");
-                   publishProgress("download started");
+                publishProgress("download started");
 
 
                 File downloadLocation = new File(context.getCacheDir() + "/" + name + ".zip");
@@ -193,79 +193,32 @@ public class DetailBootAnim extends AppCompatActivity {
                 Log.d("Animation", "unzipping finished");
                 publishProgress("unzipping finished");
 
+                AnimationDrawable animationDrawable;
 
-                File bootaniCacheFolder = new File(context.getCacheDir() + "/" + name + "_cache");
+                int skip = 0;
 
-                List<String> confFile = FileUtils.readLines(new File(bootaniCacheFolder.getAbsoluteFile() + "/desc.txt"));
+                while (true) {
 
-                Pattern firstLineRegex = Pattern.compile("(\\d*) (\\d*) (\\d*)");
-                Pattern otherLineRegex = Pattern.compile("(\\D*) (\\d*) (\\d*) (.*)");
+                    skip++;
 
-
-                Matcher matcher = firstLineRegex.matcher(confFile.get(0));
-
-                matcher.find();
-
-                int fps = Integer.parseInt(matcher.group(3));
-
-                int duration = (int) (1000.0 / fps);
-
-                AnimationDrawable animationDrawable = new AnimationDrawable();
-                animationDrawable.setOneShot(false);
-
-                for (int i = 1; i < confFile.size(); i++) {
-
-                    String line = confFile.get(i);
-
-                    Matcher lineMatcher = otherLineRegex.matcher(line);
-
-                    if (!lineMatcher.find()) {
-                        continue;
+                    try {
+                        animationDrawable = getAnimation(skip);
+                        break;
+                    } catch (OutOfMemoryError e) {
+                        System.gc();
+                        e.printStackTrace();
+                        Log.d("Increase skip", String.valueOf(skip));
                     }
-
-                    String folder = lineMatcher.group(4);
-
-
-                    ArrayList<String> files = loadFiles(context.getCacheDir() + "/" + name + "_cache/" + folder);
-
-
-                    for (String fileName : files) {
-
-                        File file = new File(context.getCacheDir() + "/" + name + "_cache/" + folder + "/" + fileName);
-
-                        //   Bitmap bitmap = Picasso.with(context).load(file).get();
-
-                        BitmapFactory.Options op = new BitmapFactory.Options();
-                        op.inPreferredConfig = Bitmap.Config.RGB_565;
-                        op.outHeight = 200;
-                        op.outWidth = 200;
-
-                        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), op);
-
-
-                        //publishProgress(bitmap);
-
-                        //Thread.sleep(duration);
-
-                        Drawable d = new BitmapDrawable(getResources(), bitmap);
-
-                        // bitmap.recycle();
-
-                        animationDrawable.addFrame(d, duration);
-
-                        Log.d("Animation adding", file.getAbsolutePath());
-
-                    }
-
                 }
 
                 return animationDrawable;
 
-            } catch (IOException | OutOfMemoryError e) {
-                e.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
 
             return null;
+
         }
 
         @Override
@@ -316,6 +269,86 @@ public class DetailBootAnim extends AppCompatActivity {
             matrix.postRotate(angle);
             return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
         }
+
+
+        private AnimationDrawable getAnimation(int skip) {
+
+
+            File bootaniCacheFolder = new File(context.getCacheDir() + "/" + name + "_cache");
+
+            List<String> confFile = null;
+            try {
+                confFile = FileUtils.readLines(new File(bootaniCacheFolder.getAbsoluteFile() + "/desc.txt"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Pattern firstLineRegex = Pattern.compile("(\\d*) (\\d*) (\\d*)");
+            Pattern otherLineRegex = Pattern.compile("(\\D*) (\\d*) (\\d*) (.*)");
+
+
+            Matcher matcher = firstLineRegex.matcher(confFile.get(0));
+
+            matcher.find();
+
+            int fps = Integer.parseInt(matcher.group(3));
+
+            int duration = (int) (1000.0 / fps);
+            duration *= skip;
+
+            AnimationDrawable animationDrawable = new AnimationDrawable();
+            animationDrawable.setOneShot(false);
+
+            int fileNumber = 1;
+
+            for (int i = 1; i < confFile.size(); i++) {
+
+                String line = confFile.get(i);
+
+                Matcher lineMatcher = otherLineRegex.matcher(line);
+
+                if (!lineMatcher.find()) {
+                    continue;
+                }
+
+                String folder = lineMatcher.group(4);
+
+
+                ArrayList<String> files = loadFiles(context.getCacheDir() + "/" + name + "_cache/" + folder);
+
+
+                for (String fileName : files) {
+
+                    fileNumber++;
+
+                    if (fileNumber % skip != 0) {
+                        continue;
+                    }
+
+                    File file = new File(context.getCacheDir() + "/" + name + "_cache/" + folder + "/" + fileName);
+
+                    BitmapFactory.Options op = new BitmapFactory.Options();
+                    op.inPreferredConfig = Bitmap.Config.RGB_565;
+                    op.outHeight = 200;
+                    op.outWidth = 200;
+
+                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), op);
+
+                    Drawable d = new BitmapDrawable(getResources(), bitmap);
+
+                    animationDrawable.addFrame(d, duration);
+
+                    Log.d("Animation adding", file.getAbsolutePath());
+
+                }
+
+            }
+
+            return animationDrawable;
+
+
+        }
+
 
     }
 
