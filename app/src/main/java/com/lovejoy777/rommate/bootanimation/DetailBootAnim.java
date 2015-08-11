@@ -195,7 +195,7 @@ public class DetailBootAnim extends AppCompatActivity {
 
                 AnimationDrawable animationDrawable;
 
-                int skip = 5;
+                int skip = 6;
 
                 //Firstly we're trying to create animation from every image
                 //If it fails, we're removing every 4h file
