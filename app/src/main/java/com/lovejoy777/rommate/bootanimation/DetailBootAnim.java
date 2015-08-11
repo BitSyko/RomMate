@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -202,7 +203,7 @@ public class DetailBootAnim extends AppCompatActivity {
 
                     Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), null);
 
-                    Drawable d = new BitmapDrawable(getResources(), bitmap);
+                    Drawable d = new BitmapDrawable(getResources(), RotateBitmap(bitmap, 90));
 
                     animationDrawable.addFrame(d, duration);
 
@@ -237,8 +238,10 @@ public class DetailBootAnim extends AppCompatActivity {
 
 
             if (aVoid != null) {
+                imageView.setImageBitmap(null);
                 imageView.setBackground(aVoid);
                 ((AnimationDrawable) imageView.getBackground()).start();
+                imageView.invalidate();
             }
 
         }
@@ -260,6 +263,13 @@ public class DetailBootAnim extends AppCompatActivity {
             }
             Collections.sort(files, String.CASE_INSENSITIVE_ORDER);
             return files;
+        }
+
+        private Bitmap RotateBitmap(Bitmap source, float angle)
+        {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(angle);
+            return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
         }
 
     }
