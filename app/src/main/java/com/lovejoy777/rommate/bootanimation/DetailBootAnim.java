@@ -195,11 +195,17 @@ public class DetailBootAnim extends AppCompatActivity {
 
                 AnimationDrawable animationDrawable;
 
-                int skip = 0;
+                int skip = 5;
+
+                //Firstly we're trying to create animation from every image
+                //If it fails, we're removing every 4h file
+                //If it fails every 3rd
+                //2nd
+                //...
 
                 while (true) {
 
-                    skip++;
+                    skip--;
 
                     try {
                         animationDrawable = getAnimation(skip);
@@ -223,8 +229,6 @@ public class DetailBootAnim extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(String... values) {
-            //   super.onProgressUpdate(values);
-            // imageView.setImageBitmap(values[0]);
             Toast.makeText(context, values[0], Toast.LENGTH_SHORT).show();
         }
 
@@ -271,17 +275,15 @@ public class DetailBootAnim extends AppCompatActivity {
         }
 
 
-        private AnimationDrawable getAnimation(int skip) {
+        private AnimationDrawable getAnimation(int skip) throws IOException {
 
+            if (skip == 5) {
+                skip = Integer.MAX_VALUE;
+            }
 
             File bootaniCacheFolder = new File(context.getCacheDir() + "/" + name + "_cache");
 
-            List<String> confFile = null;
-            try {
-                confFile = FileUtils.readLines(new File(bootaniCacheFolder.getAbsoluteFile() + "/desc.txt"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            List<String> confFile = FileUtils.readLines(new File(bootaniCacheFolder.getAbsoluteFile() + "/desc.txt"));
 
             Pattern firstLineRegex = Pattern.compile("(\\d*) (\\d*) (\\d*)");
             Pattern otherLineRegex = Pattern.compile("(\\D*) (\\d*) (\\d*) (.*)");
@@ -294,7 +296,6 @@ public class DetailBootAnim extends AppCompatActivity {
             int fps = Integer.parseInt(matcher.group(3));
 
             int duration = (int) (1000.0 / fps);
-            duration *= skip;
 
             AnimationDrawable animationDrawable = new AnimationDrawable();
             animationDrawable.setOneShot(false);
@@ -321,7 +322,7 @@ public class DetailBootAnim extends AppCompatActivity {
 
                     fileNumber++;
 
-                    if (fileNumber % skip != 0) {
+                    if (fileNumber % skip == 0) {
                         continue;
                     }
 
@@ -334,7 +335,11 @@ public class DetailBootAnim extends AppCompatActivity {
 
                     Drawable d = new BitmapDrawable(getResources(), bitmap);
 
-                    animationDrawable.addFrame(d, duration);
+                    if (fileNumber % skip == skip - 1) {
+                        animationDrawable.addFrame(d, duration * 2);
+                    } else {
+                        animationDrawable.addFrame(d, duration);
+                    }
 
                     Log.d("Animation adding", file.getAbsolutePath());
 
