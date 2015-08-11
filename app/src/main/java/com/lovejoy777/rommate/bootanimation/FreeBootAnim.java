@@ -2,7 +2,6 @@ package com.lovejoy777.rommate.bootanimation;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
-import android.net.ParseException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,34 +10,22 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
 import com.lovejoy777.rommate.R;
 import com.lovejoy777.rommate.Themes;
 import com.lovejoy777.rommate.adapters.CardViewAdapter;
 import com.lovejoy777.rommate.adapters.RecyclerItemClickListener;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
-/**
- * Created by lovejoy777 on 14/07/15.
- */
 public class FreeBootAnim extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
@@ -57,11 +44,11 @@ public class FreeBootAnim extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
 
-        themesList = new ArrayList<Themes>();
+        themesList = new ArrayList<>();
 
         new JSONAsyncTask().execute("https://raw.githubusercontent.com/BitSyko/rommate_boots_json/master/bootanims.json");
 
-        mRecyclerView = (RecyclerView)findViewById(R.id.cardList);
+        mRecyclerView = (RecyclerView) findViewById(R.id.cardList);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -101,24 +88,18 @@ public class FreeBootAnim extends AppCompatActivity {
         );
         //initialize swipetorefresh
 
-        mSwipeRefresh.setColorSchemeResources(R.color.accent,R.color.primary);
+        mSwipeRefresh.setColorSchemeResources(R.color.accent, R.color.primary);
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 themesList.clear();
                 new JSONAsyncTask().execute("https://raw.githubusercontent.com/BitSyko/rommate_boots_json/master/bootanims.json");
-                onItemsLoadComplete();
-            }
-
-            void onItemsLoadComplete(){
             }
         });
     }
 
 
-
     class JSONAsyncTask extends AsyncTask<String, Void, Boolean> {
-
 
 
         @Override
@@ -136,56 +117,39 @@ public class FreeBootAnim extends AppCompatActivity {
         protected Boolean doInBackground(String... urls) {
             try {
 
-                //------------------>>
-                HttpGet httppost = new HttpGet(urls[0]);
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpResponse response = httpclient.execute(httppost);
 
-                // StatusLine stat = response.getStatusLine();
-                int status = response.getStatusLine().getStatusCode();
+                String data = IOUtils.toString(new URL(urls[0]));
 
-                if (status == 200) {
-                    HttpEntity entity = response.getEntity();
-                    String data = EntityUtils.toString(entity);
+                JSONObject jsono = new JSONObject(data);
+                JSONArray jarray = jsono.getJSONArray("Boots");
 
+                Random rnd = new Random();
+                for (int i = jarray.length() - 1; i >= 0; i--) {
 
-                    JSONObject jsono = new JSONObject(data);
-                    JSONArray jarray = jsono.getJSONArray("Boots");
+                    int j = rnd.nextInt(i + 1);
 
-                    Random rnd = new Random();
-                    for (int i = jarray.length() - 1; i >= 0; i--)
-                    {
-                        HashMap<String, String> map = new HashMap<String, String>();
-                        int j = rnd.nextInt(i + 1);
+                    // Simple swap
+                    JSONObject object = jarray.getJSONObject(j);
+                    jarray.put(j, jarray.get(i));
+                    jarray.put(i, object);
+                    Themes theme = new Themes();
 
-                        // Simple swap
-                        JSONObject object = jarray.getJSONObject(j);
-                        jarray.put(j, jarray.get(i));
-                        jarray.put(i, object);
-                        Themes theme = new Themes();
+                    theme.settitle(object.getString("title"));
+                    theme.setauthor(object.getString("author"));
+                    theme.setlink(object.getString("link"));
+                    theme.setmd5(object.getString("md5"));
+                    theme.seticon(object.getString("icon"));
+                    theme.setpromo(object.getString("promo"));
+                    theme.setdescription(object.getString("description"));
+                    theme.setvideo(object.getString("video"));
 
-                        theme.settitle(object.getString("title"));
-                        theme.setauthor(object.getString("author"));
-                        theme.setlink(object.getString("link"));
-                        theme.setmd5(object.getString("md5"));
-                        theme.seticon(object.getString("icon"));
-                        theme.setpromo(object.getString("promo"));
-                        theme.setdescription(object.getString("description"));
-                        theme.setvideo(object.getString("video"));
-
-                        themesList.add(theme);
-                    }
-                    return true;
+                    themesList.add(theme);
                 }
+                return true;
 
-                //------------------>>
 
-            } catch (ParseException e1) {
+            } catch (JSONException | IOException e1) {
                 e1.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
             return false;
         }
@@ -198,8 +162,11 @@ public class FreeBootAnim extends AppCompatActivity {
                 }
             });
             mAdapter.notifyDataSetChanged();
-            if(result == false)
-                Toast.makeText(getApplicationContext(), "Unable to fetch data from server", Toast.LENGTH_LONG).show();
+
+            if (!result) {
+                Toast.makeText(FreeBootAnim.this, "Unable to fetch data from server", Toast.LENGTH_LONG).show();
+            }
+
             System.out.println(themesList.size());
 
         }
