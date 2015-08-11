@@ -1,6 +1,7 @@
 package com.lovejoy777.rommate.bootanimation;
 
 import android.app.ActivityOptions;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -18,9 +19,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
-import com.lovejoy777.rommate.ImageLoadTaskPromo;
 import com.lovejoy777.rommate.R;
 import com.squareup.picasso.Picasso;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -35,12 +37,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-/**
- * Created by lovejoy777 on 27/06/15.
- */
 public class DetailBootAnim extends AppCompatActivity {
 
-    Bitmap bitmap[] = new Bitmap[3];
+    Button downloadbutton;
+    Button generateButton;
+    ImageView videoView1;
+    String title;
+    String link;
+    String md5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +64,9 @@ public class DetailBootAnim extends AppCompatActivity {
         final Intent extras = getIntent();
 
         // GET STRINGS
-        String title = extras.getStringExtra("keytitle");
-        final String link = extras.getStringExtra("keylink");
-        final String md5 = extras.getStringExtra("keymd5");
+        title = extras.getStringExtra("keytitle");
+        link = extras.getStringExtra("keylink");
+        md5 = extras.getStringExtra("keymd5");
         final String promo = extras.getStringExtra("keypromo");
         String description = extras.getStringExtra("keydescription");
         String developer = extras.getStringExtra("keydeveloper");
@@ -74,19 +78,24 @@ public class DetailBootAnim extends AppCompatActivity {
         ImageView promoimg = (ImageView) findViewById(R.id.promo);
         TextView txt2 = (TextView) findViewById(R.id.tvdescription);
         TextView developertv = (TextView) findViewById(R.id.tvDeveloper);
-        ImageView videoView1 = (ImageView) findViewById(R.id.videoView1);
+        videoView1 = (ImageView) findViewById(R.id.videoView1);
+        downloadbutton = (Button) findViewById(R.id.downloadButton);
+        generateButton = (Button) findViewById(R.id.generateButton);
 
+        generateButton.setVisibility(View.GONE);
 
         // SET TEXT/IMAGE VIEWS
         collapsingToolbar.setTitle(title);
 
-        Picasso.with(this).load(promo).into(promoimg);
-        Picasso.with(this).load(promo).into(videoView1);
+        Picasso.with(this).load(promo).placeholder(R.drawable.heroimage).into(promoimg);
+        //Picasso.with(this).load(promo).placeholder(R.drawable.heroimage).into(videoView1);
+
+        videoView1.setImageResource(R.drawable.heroimage);
 
         txt2.setText(description);
         developertv.setText(developer);
 
-        new BootVideo(this, videoView1, title, link).execute();
+        //  new BootVideo(this, videoView1, title, link).execute();
 
         /*
         videoView1.setVideoPath(video);
@@ -95,22 +104,20 @@ public class DetailBootAnim extends AppCompatActivity {
         videoView1.start();
 */
 
-        // DOWNLOAD BUTTON
-        Button downloadbutton;
-        downloadbutton = (Button) findViewById(R.id.button);
 
         downloadbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Intent installtheme = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-
-                Bundle bndlanimation =
-                        ActivityOptions.makeCustomAnimation(getApplicationContext(), R.anim.anni1, R.anim.anni2).toBundle();
-                startActivity(installtheme, bndlanimation);
-
+                new DownloadBoot().execute();
             }
-        }); // end DOWNLOAD BUTTON
+        });
+
+        generateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new BootVideo().execute();
+            }
+        });
 
     }
 
@@ -120,52 +127,92 @@ public class DetailBootAnim extends AppCompatActivity {
         overridePendingTransition(R.anim.back2, R.anim.back1);
     }
 
+    private class DownloadBoot extends AsyncTask<Void, Void, Void> {
 
-    private class BootVideo extends AsyncTask<Void, String, AnimationDrawable> {
+        ProgressDialog progressBackup;
 
-        Context context;
-        ImageView imageView;
-        String name;
-        String link;
-
-        public BootVideo(Context context, ImageView imageView, String name, String link) {
-            this.context = context;
-            this.imageView = imageView;
-            this.name = name;
-            this.link = link;
+        @Override
+        protected void onPreExecute() {
+            progressBackup = ProgressDialog.show(DetailBootAnim.this, "Downloading",
+                    "Downloading bootanimation" + "...", true);
         }
 
         @Override
-        protected AnimationDrawable doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
+
+            File zipFile = new File(DetailBootAnim.this.getCacheDir() + "/" + title + ".zip");
+
+
             try {
 
-                Log.d("Animation", "download started");
-                publishProgress("download started");
+                while (!zipFile.exists() || !(fileToMd5(zipFile).equalsIgnoreCase(md5))) {
+                    zipFile.delete();
+                    FileUtils.copyURLToFile(new URL(link), zipFile);
+                    Log.d("MD5", fileToMd5(zipFile) + " vs " + md5);
+                }
+
+                File bootanizipLocation = new File(DetailBootAnim.this.getCacheDir() + "/" + title + "_bootani" + ".zip");
 
 
-                File downloadLocation = new File(context.getCacheDir() + "/" + name + ".zip");
-                downloadLocation.delete();
-
-                File bootanizipLocation = new File(context.getCacheDir() + "/" + name + "_bootani" + ".zip");
-                bootanizipLocation.delete();
-
-                FileUtils.copyURLToFile(new URL(link), downloadLocation);
-
-                Log.d("Animation", "download finished");
-                publishProgress("download finished");
-
-
-                Log.d("Animation", "unzipping started");
-                publishProgress("unzipping started");
-
-                ZipFile zip = new ZipFile(downloadLocation);
+                ZipFile zip = new ZipFile(zipFile);
                 InputStream manifestInputStream = zip.getInputStream(zip.getEntry("bootanimation.zip"));
 
 
                 FileUtils.copyInputStreamToFile(manifestInputStream, bootanizipLocation);
                 zip.close();
 
-                zip = new ZipFile(bootanizipLocation);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            progressBackup.dismiss();
+            downloadbutton.setVisibility(View.GONE);
+            generateButton.setVisibility(View.VISIBLE);
+        }
+
+        private String fileToMd5(File file) throws IOException {
+            return new String(Hex.encodeHex(DigestUtils.md5(new FileInputStream(file))));
+        }
+
+    }
+
+
+    private class BootVideo extends AsyncTask<Void, String, AnimationDrawable> {
+
+        Context context;
+        String name;
+        ProgressDialog progressBackup;
+
+        public BootVideo() {
+            this.context = DetailBootAnim.this;
+            name = DetailBootAnim.this.title;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            progressBackup = ProgressDialog.show(DetailBootAnim.this, "Generating",
+                    "Generating preview" + "...", true);
+        }
+
+        @Override
+        protected AnimationDrawable doInBackground(Void... params) {
+            try {
+
+
+                File bootanizipLocation = new File(context.getCacheDir() + "/" + name + "_bootani" + ".zip");
+                //   bootanizipLocation.delete();
+
+
+                Log.d("Animation", "unzipping started");
+                publishProgress("unzipping started");
+
+                ZipFile zip = new ZipFile(bootanizipLocation);
 
                 ZipEntry ze;
                 ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(bootanizipLocation)));
@@ -193,9 +240,9 @@ public class DetailBootAnim extends AppCompatActivity {
                 Log.d("Animation", "unzipping finished");
                 publishProgress("unzipping finished");
 
-                AnimationDrawable animationDrawable;
+                AnimationDrawable animationDrawable = null;
 
-                int skip = 6;
+                int skip = 5;
 
                 //Firstly we're trying to create animation from every image
                 //If it fails, we're removing every 4h file
@@ -203,9 +250,8 @@ public class DetailBootAnim extends AppCompatActivity {
                 //2nd
                 //...
 
-                while (true) {
+                while (skip > 1) {
 
-                    skip--;
 
                     try {
                         animationDrawable = getAnimation(skip);
@@ -215,6 +261,9 @@ public class DetailBootAnim extends AppCompatActivity {
                         e.printStackTrace();
                         Log.d("Increase skip", String.valueOf(skip));
                     }
+
+                    skip--;
+
                 }
 
                 return animationDrawable;
@@ -238,13 +287,14 @@ public class DetailBootAnim extends AppCompatActivity {
 
             Log.d("Animation", "started");
             Toast.makeText(context, "Animation started", Toast.LENGTH_LONG).show();
-
+            progressBackup.dismiss();
+            generateButton.setVisibility(View.GONE);
 
             if (aVoid != null) {
-                imageView.setImageBitmap(null);
-                imageView.setBackground(aVoid);
-                ((AnimationDrawable) imageView.getBackground()).start();
-                imageView.invalidate();
+                videoView1.setImageBitmap(null);
+                videoView1.setBackground(aVoid);
+                ((AnimationDrawable) videoView1.getBackground()).start();
+                videoView1.invalidate();
             }
 
         }

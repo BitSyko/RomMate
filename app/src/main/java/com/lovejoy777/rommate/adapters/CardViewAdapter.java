@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.lovejoy777.rommate.R;
 import com.lovejoy777.rommate.Themes;
+import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -44,10 +45,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
         Themes theme = themes.get(i);
         viewHolder.themeName.setText(theme.gettitle());
         viewHolder.themeDeveloper.setText(theme.getauthor());
-        viewHolder.themeImage.setImageResource(R.mipmap.ic_launcher);
-        new DownloadImageTask(viewHolder.themeImage).execute(themes.get(i).geticon());
-
-
+        Picasso.with(mContext).load(theme.geticon()).placeholder(R.mipmap.ic_launcher).into(viewHolder.themeImage);
     }
 
     @Override

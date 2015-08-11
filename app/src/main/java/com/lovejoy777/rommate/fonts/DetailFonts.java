@@ -60,7 +60,7 @@ public class DetailFonts extends AppCompatActivity {
 
         // DOWNLOAD BUTTON
         Button installbutton;
-        installbutton = (Button) findViewById(R.id.button);
+        installbutton = (Button) findViewById(R.id.downloadButton);
 
         installbutton.setOnClickListener(new View.OnClickListener() {
             @Override
