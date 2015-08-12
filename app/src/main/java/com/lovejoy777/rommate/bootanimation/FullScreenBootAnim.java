@@ -21,7 +21,7 @@ public class FullScreenBootAnim extends Activity {
         setContentView(R.layout.full_screen);
 
         imageView = (ImageView) findViewById(R.id.image);
-        
+
         //Black
         imageView.setBackgroundColor(0xFF000000);
 

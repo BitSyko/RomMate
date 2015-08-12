@@ -42,8 +42,7 @@ import java.util.zip.ZipInputStream;
 
 public class DetailBootAnim extends AppCompatActivity {
 
-    Button downloadbutton, generateButton, installButton;
-    ImageView videoView1;
+    Button downloadbutton, generateButton, installButton, showButton;
     String title, link, md5;
     BootAnimPrevHolder previewHolder;
 
@@ -79,17 +78,15 @@ public class DetailBootAnim extends AppCompatActivity {
         ImageView promoimg = (ImageView) findViewById(R.id.promo);
         TextView txt2 = (TextView) findViewById(R.id.tvdescription);
         TextView developertv = (TextView) findViewById(R.id.tvDeveloper);
-        videoView1 = (ImageView) findViewById(R.id.videoView1);
         downloadbutton = (Button) findViewById(R.id.downloadButton);
         generateButton = (Button) findViewById(R.id.generateButton);
         installButton = (Button) findViewById(R.id.installButton);
+        showButton = (Button) findViewById(R.id.showButton);
 
         // SET TEXT/IMAGE VIEWS
         collapsingToolbar.setTitle(title);
 
         Picasso.with(this).load(promo).placeholder(R.drawable.heroimage).into(promoimg);
-
-        videoView1.setImageResource(R.drawable.heroimage);
 
         txt2.setText(description);
         developertv.setText(developer);
@@ -108,15 +105,13 @@ public class DetailBootAnim extends AppCompatActivity {
             }
         });
 
-        videoView1.setOnClickListener(new View.OnClickListener() {
+        showButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                previewHolder.getAnimationDrawable().stop();
-                videoView1.setBackground(null);
-                previewHolder.transform();
                 FullScreenBootAnim.launch(DetailBootAnim.this, previewHolder);
             }
         });
+
 
         installButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,24 +120,6 @@ public class DetailBootAnim extends AppCompatActivity {
             }
         });
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (previewHolder != null) {
-
-            Log.d("BootAni", "returning to activity");
-
-            previewHolder.transform();
-            AnimationDrawable animation = previewHolder.getAnimationDrawable();
-
-            videoView1.setImageBitmap(null);
-            videoView1.setBackground(animation);
-            animation.start();
-            videoView1.invalidate();
-        }
     }
 
     @Override
@@ -391,10 +368,7 @@ public class DetailBootAnim extends AppCompatActivity {
             if (animation != null) {
                 previewHolder = new BootAnimPrevHolder();
                 previewHolder.setAnimationDrawable(animation);
-                videoView1.setImageBitmap(null);
-                videoView1.setBackground(animation);
-                animation.start();
-                videoView1.invalidate();
+                showButton.setVisibility(View.VISIBLE);
             }
 
         }

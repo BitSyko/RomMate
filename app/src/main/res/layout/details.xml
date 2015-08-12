@@ -79,6 +79,20 @@
                 android:layout_marginTop="16dp"
                 android:layout_below="@+id/downloadButton"/>
 
+
+            <Button
+                android:text="Show preview"
+                android:textColor="@color/buttonText"
+                android:layout_width="172dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/showButton"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:background="@color/primary"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_below="@+id/generateButton"/>
+
             <Button
                 android:text="Install"
                 android:textColor="@color/buttonText"
@@ -90,7 +104,7 @@
                 android:background="@color/primary"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
-                android:layout_below="@+id/generateButton"/>
+                android:layout_below="@+id/showButton"/>
 
             <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
@@ -187,13 +201,6 @@
                 </LinearLayout>
 
             </android.support.v7.widget.CardView>
-
-            <ImageView
-                android:layout_centerHorizontal="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/videoView1"
-                android:layout_below="@+id/CardViewDeveloper" />
 
         </RelativeLayout>
 
