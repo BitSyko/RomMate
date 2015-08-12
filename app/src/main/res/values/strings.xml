@@ -11,6 +11,11 @@
     <string name="card3">Click to launch Layers Manager</string>
     <string name="reboot">Reboot</string>
     <string name="PreformReboot">Perform a soft reboot?</string>
+    <string name="General">General</string>
+    <string name="Settings">Settings</string>
+    <string name="noBuildPropCommit">no build.prop commit</string>
+    <string name="launcherIconRemoved">Launcher Icon removed</string>
+    <string name="romNeedsSupport">Your rom needs support for this function</string>
 
 
     <!-- BOOTANIM MAIN SCREEN CARD TEXT -->

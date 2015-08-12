@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/General"
+        android:key="first_category">
+
+
+        <SwitchPreference
+            android:key="switch1"
+            android:title="Remove Launcher Icon"
+            android:defaultValue="false"
+            android:summary="Be sure your Rom has the BitSyko Preference switch in Settings."
+            />
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>
