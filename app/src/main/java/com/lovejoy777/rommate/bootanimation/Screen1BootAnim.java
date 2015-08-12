@@ -144,6 +144,8 @@ public class Screen1BootAnim extends AppCompatActivity {
                         Thread.sleep(1);
                     }
 
+                    RootTools.remount("/system/media", "RO");
+
                     // CLOSE ALL SHELLS
                     RootTools.closeAllShells();
 

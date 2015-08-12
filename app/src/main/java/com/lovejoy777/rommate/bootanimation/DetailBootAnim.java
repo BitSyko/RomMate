@@ -1,6 +1,5 @@
 package com.lovejoy777.rommate.bootanimation;
 
-import android.app.ActivityOptions;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -10,21 +9,25 @@ import android.graphics.Matrix;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.*;
-
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 import com.lovejoy777.rommate.R;
+import com.lovejoy777.rommate.commands.RootCommands;
 import com.squareup.picasso.Picasso;
+import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.execution.CommandCapture;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -39,13 +42,9 @@ import java.util.zip.ZipInputStream;
 
 public class DetailBootAnim extends AppCompatActivity {
 
-    Button downloadbutton;
-    Button generateButton;
+    Button downloadbutton, generateButton, installButton;
     ImageView videoView1;
-    String title;
-    String link;
-    String md5;
-    //AnimationDrawable animation;
+    String title, link, md5;
     BootAnimPrevHolder previewHolder;
 
     @Override
@@ -83,8 +82,7 @@ public class DetailBootAnim extends AppCompatActivity {
         videoView1 = (ImageView) findViewById(R.id.videoView1);
         downloadbutton = (Button) findViewById(R.id.downloadButton);
         generateButton = (Button) findViewById(R.id.generateButton);
-
-        generateButton.setVisibility(View.GONE);
+        installButton = (Button) findViewById(R.id.installButton);
 
         // SET TEXT/IMAGE VIEWS
         collapsingToolbar.setTitle(title);
@@ -120,6 +118,13 @@ public class DetailBootAnim extends AppCompatActivity {
             }
         });
 
+        installButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new InstallBoot().execute();
+            }
+        });
+
     }
 
     @Override
@@ -145,6 +150,79 @@ public class DetailBootAnim extends AppCompatActivity {
         super.onBackPressed();
         overridePendingTransition(R.anim.back2, R.anim.back1);
     }
+
+
+    private class InstallBoot extends AsyncTask<Void, String, Void> {
+
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(DetailBootAnim.this, "Installing",
+                    "Installing bootanimation" + "...", true);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            //Create backup of current bootanimation
+
+            File currentBootani = new File("/system/media/bootanimation.zip");
+
+            //Creating backup folder
+            new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots").mkdirs();
+
+
+            File backup = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
+
+            try {
+                FileUtils.copyFile(currentBootani, backup);
+                publishProgress("Backup created");
+            } catch (IOException e) {
+                e.printStackTrace();
+                publishProgress("Creating backup failed");
+                return null;
+            }
+
+
+            File bootanizipLocation = new File(DetailBootAnim.this.getCacheDir() + "/" + title + "_bootani" + ".zip");
+
+
+            RootTools.remount("/system/media", "RW");
+
+
+            RootCommands.moveCopyRoot(bootanizipLocation.getAbsolutePath(), "/system/media/bootanimation.zip");
+
+            try {
+
+                CommandCapture command5 = new CommandCapture(0, "chmod 644 /system/media/bootanimation.zip");
+                RootTools.getShell(true).add(command5);
+                while (!command5.isFinished()) {
+                    Thread.sleep(1);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            RootTools.remount("/system/media", "RO");
+
+
+            return null;
+
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            Toast.makeText(DetailBootAnim.this, values[0], Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            progressDialog.dismiss();
+        }
+    }
+
 
     private class DownloadBoot extends AsyncTask<Void, Void, Void> {
 
@@ -193,6 +271,7 @@ public class DetailBootAnim extends AppCompatActivity {
             progressBackup.dismiss();
             downloadbutton.setVisibility(View.GONE);
             generateButton.setVisibility(View.VISIBLE);
+            installButton.setVisibility(View.VISIBLE);
         }
 
         private String fileToMd5(File file) throws IOException {
