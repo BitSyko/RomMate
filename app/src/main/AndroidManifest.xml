@@ -150,6 +150,11 @@
             android:parentActivityName=".MainActivity">
         </activity>
 
+
+        <activity
+            android:name=".bootanimation.FullScreenBootAnim">
+        </activity>
+
         <activity
             android:name="com.lovejoy777.rommate.filepicker.FilePickerActivity"
             android:theme="@style/Toolbar2">

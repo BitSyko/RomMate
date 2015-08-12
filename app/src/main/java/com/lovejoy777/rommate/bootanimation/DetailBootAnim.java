@@ -45,6 +45,8 @@ public class DetailBootAnim extends AppCompatActivity {
     String title;
     String link;
     String md5;
+    //AnimationDrawable animation;
+    BootAnimPrevHolder previewHolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,22 +90,11 @@ public class DetailBootAnim extends AppCompatActivity {
         collapsingToolbar.setTitle(title);
 
         Picasso.with(this).load(promo).placeholder(R.drawable.heroimage).into(promoimg);
-        //Picasso.with(this).load(promo).placeholder(R.drawable.heroimage).into(videoView1);
 
         videoView1.setImageResource(R.drawable.heroimage);
 
         txt2.setText(description);
         developertv.setText(developer);
-
-        //  new BootVideo(this, videoView1, title, link).execute();
-
-        /*
-        videoView1.setVideoPath(video);
-        videoView1.setMediaController(new MediaController(this));
-        videoView1.requestFocus();
-        videoView1.start();
-*/
-
 
         downloadbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,6 +110,34 @@ public class DetailBootAnim extends AppCompatActivity {
             }
         });
 
+        videoView1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                previewHolder.getAnimationDrawable().stop();
+                videoView1.setBackground(null);
+                previewHolder.transform();
+                FullScreenBootAnim.launch(DetailBootAnim.this, previewHolder);
+            }
+        });
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (previewHolder != null) {
+
+            Log.d("BootAni", "returning to activity");
+
+            previewHolder.transform();
+            AnimationDrawable animation = previewHolder.getAnimationDrawable();
+
+            videoView1.setImageBitmap(null);
+            videoView1.setBackground(animation);
+            animation.start();
+            videoView1.invalidate();
+        }
     }
 
     @Override
@@ -204,10 +223,7 @@ public class DetailBootAnim extends AppCompatActivity {
         protected AnimationDrawable doInBackground(Void... params) {
             try {
 
-
                 File bootanizipLocation = new File(context.getCacheDir() + "/" + name + "_bootani" + ".zip");
-                //   bootanizipLocation.delete();
-
 
                 Log.d("Animation", "unzipping started");
                 publishProgress("unzipping started");
@@ -258,6 +274,8 @@ public class DetailBootAnim extends AppCompatActivity {
                         break;
                     } catch (OutOfMemoryError e) {
                         System.gc();
+                        System.gc();
+                        System.gc();
                         e.printStackTrace();
                         Log.d("Increase skip", String.valueOf(skip));
                     }
@@ -282,18 +300,21 @@ public class DetailBootAnim extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(AnimationDrawable aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(AnimationDrawable animation) {
+            super.onPostExecute(animation);
 
             Log.d("Animation", "started");
             Toast.makeText(context, "Animation started", Toast.LENGTH_LONG).show();
             progressBackup.dismiss();
             generateButton.setVisibility(View.GONE);
 
-            if (aVoid != null) {
+
+            if (animation != null) {
+                previewHolder = new BootAnimPrevHolder();
+                previewHolder.setAnimationDrawable(animation);
                 videoView1.setImageBitmap(null);
-                videoView1.setBackground(aVoid);
-                ((AnimationDrawable) videoView1.getBackground()).start();
+                videoView1.setBackground(animation);
+                animation.start();
                 videoView1.invalidate();
             }
 
