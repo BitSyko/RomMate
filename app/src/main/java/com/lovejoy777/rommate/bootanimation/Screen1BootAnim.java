@@ -2,7 +2,9 @@ package com.lovejoy777.rommate.bootanimation;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,14 +12,21 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Adapter;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.lovejoy777.rommate.MainActivity;
 import com.lovejoy777.rommate.R;
 import com.lovejoy777.rommate.commands.RootCommands;
 import com.lovejoy777.rommate.filepicker.FilePickerActivity;
+import com.lovejoy777.rommate.helpers.Commands;
+import com.lovejoy777.rommate.helpers.Constants;
 import com.stericson.RootTools.RootTools;
 import com.stericson.RootTools.exceptions.RootDeniedException;
 import com.stericson.RootTools.execution.CommandCapture;
@@ -25,6 +34,7 @@ import com.stericson.RootTools.execution.CommandCapture;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -93,7 +103,9 @@ public class Screen1BootAnim extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                new RestoreBootanim().execute();
+              //  new RestoreBootanim().execute();
+
+                colorDialog();
 
             }
         });
@@ -101,7 +113,66 @@ public class Screen1BootAnim extends AppCompatActivity {
     } // ends onCreate
 
 
-    private class RestoreBootanim extends AsyncTask<Void, Void, Void> {
+    //Dialog to choose color
+    private void colorDialog() {
+
+        final AlertDialog.Builder colorDialog = new AlertDialog.Builder(this);
+        final LayoutInflater inflater = getLayoutInflater();
+        colorDialog.setTitle(R.string.choosebackup);
+        View colordialogView = inflater.inflate(R.layout.dialog_choose_backup, null);
+        colorDialog.setView(colordialogView);
+
+        final RadioGroup radioGroup = (RadioGroup) colordialogView.findViewById(R.id.radiogroup);
+
+        final File[] chosenFile = new File[1];
+
+        final List<File> backups = Commands.loadFiles(Constants.bootAniBackupLocation);
+
+        for (File backup : backups) {
+
+            final RadioButton radioButton = new RadioButton(this);
+
+            radioButton.setText(backup.getName());
+          //  radioButton.setTextSize(18);
+            radioButton.setTag(backup);
+
+            radioGroup.addView(radioButton);
+
+            radioButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    chosenFile[0] = (File) v.getTag();
+                }
+            });
+
+            if (backups.indexOf(backup) == 0) {
+                radioButton.performClick();
+            }
+
+        }
+
+        colorDialog.setCancelable(false);
+        colorDialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                new RestoreBootanim().execute(chosenFile);
+            }
+        });
+        colorDialog.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+
+
+        });
+        colorDialog.create();
+        colorDialog.show();
+    }
+
+
+    private class RestoreBootanim extends AsyncTask<File, Void, Void> {
 
         ProgressDialog progressRestorebootanim;
 
@@ -113,10 +184,13 @@ public class Screen1BootAnim extends AppCompatActivity {
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(File... params) {
 
             // check if backedup boot anim exits
-            File dir = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
+            //File dir = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
+
+            File dir = params[0];
+
             if (!dir.exists()) {
 
                 Toast.makeText(Screen1BootAnim.this, "no boot animation found", Toast.LENGTH_LONG).show();
@@ -134,7 +208,7 @@ public class Screen1BootAnim extends AppCompatActivity {
 
                     RootTools.remount("/system/media", "RW");
 
-                    RootCommands.moveCopyRoot(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip", "/system/media/");
+                    RootCommands.moveCopyRoot(dir.getAbsolutePath(), "/system/media/bootanimation.zip");
                     //  RootTools.copyFile(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip", "/system/media/", true, true);
 
                     // RootTools.remount("/system/media", "RW");

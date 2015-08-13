@@ -28,12 +28,13 @@ import com.stericson.RootTools.execution.CommandCapture;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -146,15 +147,21 @@ public class DetailBootAnim extends AppCompatActivity {
 
             File currentBootani = new File("/system/media/bootanimation.zip");
 
+            DateTime currentDateTime = new DateTime();
+
+            DateTimeFormatter fmt = DateTimeFormat.forPattern("dd_MM_yyyy_HH:mm:ss");
+
+
             //Creating backup folder
             new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots").mkdirs();
 
 
-            File backup = new File(Environment.getExternalStorageDirectory() + "/rommate/backups/boots/bootanimation.zip");
+            File backup = new File(Environment.getExternalStorageDirectory() +
+                    "/rommate/backups/boots/bootanimation_" + fmt.print(currentDateTime) + ".zip");
 
             try {
                 FileUtils.copyFile(currentBootani, backup);
-                publishProgress("Backup created");
+                publishProgress("Backup created in " + backup.getAbsolutePath());
             } catch (IOException e) {
                 e.printStackTrace();
                 publishProgress("Creating backup failed");
@@ -164,9 +171,7 @@ public class DetailBootAnim extends AppCompatActivity {
 
             File bootanizipLocation = new File(DetailBootAnim.this.getCacheDir() + "/" + title + "_bootani" + ".zip");
 
-
             RootTools.remount("/system/media", "RW");
-
 
             RootCommands.moveCopyRoot(bootanizipLocation.getAbsolutePath(), "/system/media/bootanimation.zip");
 

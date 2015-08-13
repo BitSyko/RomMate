@@ -27,6 +27,7 @@
     <string name="bootcard3">Click to choose a boot animation</string>
     <string name="bootcard4header">Restore Boot Animation</string>
     <string name="bootcard4">Click to restore your saved backup</string>
+    <string name="choosebackup">Choose backup</string>
 
     <!-- FONTS MAIN SCREEN CARD TEXT -->
     <string name="fontscard1header">Fonts</string>
