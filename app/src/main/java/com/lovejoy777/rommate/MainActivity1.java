@@ -14,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.lovejoy777.rommate.bootanimation.Screen1BootAnim;
@@ -44,8 +45,7 @@ public class MainActivity1 extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //toolbar.setNavigationIcon(R.drawable.ic_action_back);
         setSupportActionBar(toolbar);
-
-
+        
         card1 = (CardView) findViewById(R.id.CardView_bootanim);
         card2 = (CardView) findViewById(R.id.CardView_fonts);
         card3 = (CardView) findViewById(R.id.CardView_manager);
@@ -67,16 +67,23 @@ public class MainActivity1 extends AppCompatActivity {
         card2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(MainActivity1.this, "Not ready yet (long click to enter)", Toast.LENGTH_SHORT).show();
+            }
+        }); // end card3
 
+        card2.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
                 Intent fontsactivity = new Intent(MainActivity1.this, Screen1Fonts.class);
 
                 Bundle bndlanimation =
                         ActivityOptions.makeCustomAnimation(getApplicationContext(), R.anim.anni1, R.anim.anni2).toBundle();
                 startActivity(fontsactivity, bndlanimation);
 
-
+                return true;
             }
-        }); // end card3
+        });
+
 
         // CARD 3
         card3.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +91,7 @@ public class MainActivity1 extends AppCompatActivity {
             public void onClick(View v) {
 
                 boolean installed = appInstalledOrNot("com.lovejoy777.rroandlayersmanager");
-                if(installed) {
+                if (installed) {
                     //This intent will help you to launch if the package is already installed
                     Intent layersmanager = new Intent();
                     layersmanager.setComponent(new ComponentName("com.lovejoy777.rroandlayersmanager", "com.lovejoy777.rroandlayersmanager.menu"));
@@ -109,8 +116,7 @@ public class MainActivity1 extends AppCompatActivity {
         try {
             pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
             app_installed = true;
-        }
-        catch (PackageManager.NameNotFoundException e) {
+        } catch (PackageManager.NameNotFoundException e) {
             app_installed = false;
         }
         return app_installed;
@@ -135,11 +141,11 @@ public class MainActivity1 extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if  (id == R.id.action_reboot) {
+        if (id == R.id.action_reboot) {
             reboot();
             return true;
         }
-        if  (id == R.id.action_settings) {
+        if (id == R.id.action_settings) {
             Intent settings = new Intent(MainActivity1.this, Settings.class);
             Bundle bndlanimation =
                     ActivityOptions.makeCustomAnimation(getApplicationContext(), R.anim.anni1, R.anim.anni2).toBundle();
@@ -149,7 +155,7 @@ public class MainActivity1 extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void reboot () {
+    public void reboot() {
         new AlertDialog.Builder(this)
                 .setTitle("Soft Reboot")
                 .setMessage("Are you sure you want to reboot?")
