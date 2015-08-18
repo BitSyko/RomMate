@@ -21,17 +21,13 @@ import com.lovejoy777.rommate.Themes;
 import com.lovejoy777.rommate.adapters.CardViewAdapter;
 import com.lovejoy777.rommate.adapters.RecyclerItemClickListener;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -61,7 +57,7 @@ public class FreeFonts extends AppCompatActivity {
         themesList = new ArrayList<Themes>();
         new JSONAsyncTask().execute("https://raw.githubusercontent.com/BitSyko/rommate_fonts_json/master/fonts.json");
 
-        mRecyclerView = (RecyclerView)findViewById(R.id.cardList);
+        mRecyclerView = (RecyclerView) findViewById(R.id.cardList);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -99,7 +95,7 @@ public class FreeFonts extends AppCompatActivity {
         );
         //initialize swipetorefresh
 
-        mSwipeRefresh.setColorSchemeResources(R.color.accent,R.color.primary);
+        mSwipeRefresh.setColorSchemeResources(R.color.accent, R.color.primary);
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -108,15 +104,13 @@ public class FreeFonts extends AppCompatActivity {
                 onItemsLoadComplete();
             }
 
-            void onItemsLoadComplete(){
+            void onItemsLoadComplete() {
             }
         });
     }
 
 
-
     class JSONAsyncTask extends AsyncTask<String, Void, Boolean> {
-
 
 
         @Override
@@ -134,46 +128,34 @@ public class FreeFonts extends AppCompatActivity {
         protected Boolean doInBackground(String... urls) {
             try {
 
-                //------------------>>
-                HttpGet httppost = new HttpGet(urls[0]);
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpResponse response = httpclient.execute(httppost);
+                String data = IOUtils.toString(new URL(urls[0]));
 
-                // StatusLine stat = response.getStatusLine();
-                int status = response.getStatusLine().getStatusCode();
+                JSONObject jsono = new JSONObject(data);
+                JSONArray jarray = jsono.getJSONArray("Fonts");
 
-                if (status == 200) {
-                    HttpEntity entity = response.getEntity();
-                    String data = EntityUtils.toString(entity);
+                Random rnd = new Random();
+                for (int i = jarray.length() - 1; i >= 0; i--) {
+                    HashMap<String, String> map = new HashMap<String, String>();
+                    int j = rnd.nextInt(i + 1);
 
+                    // Simple swap
+                    JSONObject object = jarray.getJSONObject(j);
+                    jarray.put(j, jarray.get(i));
+                    jarray.put(i, object);
+                    Themes theme = new Themes();
 
-                    JSONObject jsono = new JSONObject(data);
-                    JSONArray jarray = jsono.getJSONArray("Fonts");
+                    theme.settitle(object.getString("title"));
+                    theme.setauthor(object.getString("author"));
+                    theme.setlink(object.getString("link"));
+                    theme.setmd5(object.getString("md5"));
+                    theme.seticon(object.getString("icon"));
+                    theme.setpromo(object.getString("promo"));
+                    theme.setdescription(object.getString("description"));
 
-                    Random rnd = new Random();
-                    for (int i = jarray.length() - 1; i >= 0; i--)
-                    {
-                        HashMap<String, String> map = new HashMap<String, String>();
-                        int j = rnd.nextInt(i + 1);
-
-                        // Simple swap
-                        JSONObject object = jarray.getJSONObject(j);
-                        jarray.put(j, jarray.get(i));
-                        jarray.put(i, object);
-                        Themes theme = new Themes();
-
-                        theme.settitle(object.getString("title"));
-                        theme.setauthor(object.getString("author"));
-                        theme.setlink(object.getString("link"));
-                        theme.setmd5(object.getString("md5"));
-                        theme.seticon(object.getString("icon"));
-                        theme.setpromo(object.getString("promo"));
-                        theme.setdescription(object.getString("description"));
-
-                        themesList.add(theme);
-                    }
-                    return true;
+                    themesList.add(theme);
                 }
+                return true;
+
 
                 //------------------>>
 
@@ -195,15 +177,12 @@ public class FreeFonts extends AppCompatActivity {
                 }
             });
             mAdapter.notifyDataSetChanged();
-            if(result == false)
+            if (result == false)
                 Toast.makeText(getApplicationContext(), "Unable to fetch data from server", Toast.LENGTH_LONG).show();
             System.out.println(themesList.size());
 
         }
     }
-
-
-
 
 
 }
