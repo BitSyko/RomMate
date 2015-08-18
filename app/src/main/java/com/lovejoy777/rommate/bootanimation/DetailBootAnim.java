@@ -14,17 +14,20 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.lovejoy777.rommate.R;
 import com.lovejoy777.rommate.commands.RootCommands;
 import com.squareup.picasso.Picasso;
 import com.stericson.RootTools.RootTools;
 import com.stericson.RootTools.execution.CommandCapture;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -46,6 +49,8 @@ public class DetailBootAnim extends AppCompatActivity {
     Button downloadbutton, generateButton, installButton, showButton;
     String title, link, md5;
     BootAnimPrevHolder previewHolder;
+    ImageView promoimg;
+    CollapsingToolbarLayout collapsingToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +58,12 @@ public class DetailBootAnim extends AppCompatActivity {
         setContentView(R.layout.details);
 
         // Handle Toolbar
-        final android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        CollapsingToolbarLayout collapsingToolbar =
-                (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+        collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
 
         // GET STRING SZP
         final Intent extras = getIntent();
@@ -71,12 +75,11 @@ public class DetailBootAnim extends AppCompatActivity {
         final String promo = extras.getStringExtra("keypromo");
         String description = extras.getStringExtra("keydescription");
         String developer = extras.getStringExtra("keydeveloper");
-        String video = extras.getStringExtra("keyvideo");
 
 
         // ASIGN VIEWS
 
-        ImageView promoimg = (ImageView) findViewById(R.id.promo);
+        promoimg = (ImageView) findViewById(R.id.promo);
         TextView txt2 = (TextView) findViewById(R.id.tvdescription);
         TextView developertv = (TextView) findViewById(R.id.tvDeveloper);
         downloadbutton = (Button) findViewById(R.id.downloadButton);
@@ -371,9 +374,15 @@ public class DetailBootAnim extends AppCompatActivity {
 
 
             if (animation != null) {
-                previewHolder = new BootAnimPrevHolder();
-                previewHolder.setAnimationDrawable(animation);
-                showButton.setVisibility(View.VISIBLE);
+                //  previewHolder = new BootAnimPrevHolder();
+                //   previewHolder.setAnimationDrawable(animation);
+                //  showButton.setVisibility(View.VISIBLE);
+                promoimg.setBackgroundColor(0xFF000000);
+                collapsingToolbar.setTitle("");
+                promoimg.setImageDrawable(animation);
+                animation.invalidateSelf();
+                promoimg.invalidate();
+                animation.start();
             }
 
         }
